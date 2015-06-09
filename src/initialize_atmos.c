@@ -636,50 +636,64 @@ void initialize_atmos(atmos_data_struct        *atmos,
     }
   }
 
-  /*************************************************
+ /*************************************************
     Wind Speed
   *************************************************/
 
-  if (param_set.TYPE[WIND].SUPPLIED) {
-    if(param_set.FORCE_DT[param_set.TYPE[WIND].SUPPLIED-1] == 24) {
+  if (param_set.TYPE[WIND].SUPPLIED) { //open 0
+
+    if(param_set.FORCE_DT[param_set.TYPE[WIND].SUPPLIED-1] == 24) { //open 1
       /* daily wind provided */
-      for (rec = 0; rec < global_param.nrecs; rec++) {
+      for (rec = 0; rec < global_param.nrecs; rec++) { //open 2
         sum = 0;
-        for (j = 0; j < NF; j++) {
+        for (j = 0; j < NF; j++) { //open 3 
           hour = rec*global_param.dt + j*options.SNOW_STEP + global_param.starthour - hour_offset_int;
-          if (global_param.starthour - hour_offset_int < 0) hour += 24;
+          
+	  if (global_param.starthour - hour_offset_int < 0) 
+	  {
+          hour += 24;
           idx = (int)((float)hour/24.0);
           atmos[rec].wind[j] = local_forcing_data[WIND][idx]; // assume constant over the day
           sum += atmos[rec].wind[j];
-        }
-        if(NF>1) atmos[rec].wind[NR] = sum / (float)NF;
-	if(global_param.dt == 24) {
-	  if(atmos[rec].wind[j] < options.MIN_WIND_SPEED)
+          }
+
+	  }//close 3 
+	
+	  if(NF>1) {
+	  atmos[rec].wind[NR] = sum / (float)NF;
+
+	  if(global_param.dt == 24) {
+	  if(atmos[rec].wind[j] < options.MIN_WIND_SPEED){
 	    atmos[rec].wind[j] = options.MIN_WIND_SPEED;
-	}
-      }
-    }
-    else {
+	  }}}
+
+	
+      }//close 2
+    }//close 1
+
+    else {//open 4
       /* sub-daily wind provided */
-      for(rec = 0; rec < global_param.nrecs; rec++) {
+      for(rec = 0; rec < global_param.nrecs; rec++) {//open 5
         sum = 0;
         for(i = 0; i < NF; i++) {
           hour = rec*global_param.dt + i*options.SNOW_STEP + global_param.starthour - hour_offset_int;
-          if (global_param.starthour - hour_offset_int < 0) hour += 24;
+          if (global_param.starthour - hour_offset_int < 0) {hour += 24;
           atmos[rec].wind[i] = 0;
           for (idx = hour; idx < hour+options.SNOW_STEP; idx++) {
 	    if(local_forcing_data[WIND][idx] < options.MIN_WIND_SPEED)
-	      atmos[rec].wind[i] += options.MIN_WIND_SPEED;
+	      {atmos[rec].wind[i] += options.MIN_WIND_SPEED;}
 	    else
-	      atmos[rec].wind[i] += local_forcing_data[WIND][idx];
+	      {atmos[rec].wind[i] += local_forcing_data[WIND][idx];}
           }
           atmos[rec].wind[i] /= options.SNOW_STEP;
 	  sum += atmos[rec].wind[i];
-        }
-        if(NF>1) atmos[rec].wind[NR] = sum / (float)NF;
-      }
-    }
-  }
+        }}
+        if(NF>1) {atmos[rec].wind[NR] = sum / (float)NF;}
+      }//close 5 
+    }//close 4 
+ 
+}//close 0
+
   else {
     /* no wind data provided, use default constant */
     for (rec = 0; rec < global_param.nrecs; rec++) {
@@ -689,6 +703,7 @@ void initialize_atmos(atmos_data_struct        *atmos,
       atmos[rec].wind[NR] = DEFAULT_WIND_SPEED;	
     }
   }
+
 
   /*************************************************
     Air Temperature, part 1.
