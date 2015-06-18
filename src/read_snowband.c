@@ -54,6 +54,7 @@ void read_snowband(FILE    *snowband,
       fprintf(stderr, "WARNING: Cannot find current gridcell (%i) in snow band file; setting cell to have one elevation band.\n",
               soil_con->gridcel);
       /** 1 band is the default; no action necessary **/
+      rewind(snowband);
       return;
     }
 
